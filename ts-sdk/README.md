@@ -1,13 +1,41 @@
-# Epilot SDKs
-
-SDKs for the [Epilot User API](https://docs.epilot.io/api/user). Epilot it the platform for a new energy world. But, every business is unique, so with the Epilot API you have flexible options to extend the functionality of epilot to your needs.
+# openapi
 
 <!-- Start SDK Installation -->
 ## SDK Installation
 
-Please see instructions on fetching from package managers for each language specific SDK.
+### NPM
 
+```bash
+npm add openapi
+```
+
+### Yarn
+
+```bash
+yarn add openapi
+```
 <!-- End SDK Installation -->
+
+## SDK Example Usage
+<!-- Start SDK Example Usage -->
+```typescript
+import { Epilot, withSecurity} from "openapi";
+import { GetMeResponse } from "openapi/src/sdk/models/operations";
+import { AxiosError } from "axios";
+
+const sdk = new Epilot(withSecurity(
+  security: {
+    epilotAuth: {
+      authorization: "Bearer YOUR_BEARER_TOKEN_HERE",
+    },
+  }
+));
+
+sdk.userV1.getMe().then((res: GetMeResponse | AxiosError) => {
+   // handle response
+});
+```
+<!-- End SDK Example Usage -->
 
 <!-- Start SDK Available Operations -->
 ## SDK Available Operations

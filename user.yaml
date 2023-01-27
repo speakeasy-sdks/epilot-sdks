@@ -1,0 +1,814 @@
+openapi: 3.0.2
+info:
+  title: User API
+  version: 2.0.0
+  description: |
+    Manage users in epilot organization(s)
+tags:
+- name: User V2
+  description: User API V2
+- name: User V1
+  description: Legacy User API
+security:
+- EpilotAuth: []
+paths:
+  /v2/users/public/signup:
+    post:
+      operationId: signUpUser
+      summary: signUpUser
+      security: []
+      parameters:
+      - name: token
+        in: query
+        description: Invitation partner token
+        required: false
+        schema:
+          $ref: '#/components/schemas/PartnerInvitationToken'
+      tags:
+      - User V2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupUserPayload'
+      responses:
+        '200':
+          description: The created user and organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  organization:
+                    $ref: '#/components/schemas/Organization'
+  /v2/users/me:
+    get:
+      operationId: getMeV2
+      summary: getMeV2
+      description: Get currently logged in user
+      tags:
+      - User V2
+      responses:
+        '200':
+          description: currently logged in user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+  /v2/users:
+    get:
+      operationId: listUsersV2
+      summary: listUsersV2
+      parameters:
+      - name: query
+        in: query
+        description: Query text to filter by
+        required: false
+        schema:
+          $ref: '#/components/schemas/Query'
+      - name: limit
+        in: query
+        description: Limit the results size
+        required: false
+        schema:
+          $ref: '#/components/schemas/Limit'
+      - name: offset
+        in: query
+        description: Specify the page
+        required: false
+        schema:
+          $ref: '#/components/schemas/Offset'
+      description: Get the list of organization users
+      tags:
+      - User V2
+      responses:
+        '200':
+          description: List of organization users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserV2'
+  /v2/users/{id}:
+    get:
+      operationId: getUserV2
+      summary: getUserV2
+      description: Get user details by user id
+      tags:
+      - User V2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          $ref: '#/components/schemas/UserId'
+        required: true
+        description: The Id of user
+      responses:
+        '200':
+          description: The returned user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+    patch:
+      operationId: updateUserV2
+      summary: updateUserV2
+      description: Update user details
+      tags:
+      - User V2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          $ref: '#/components/schemas/UserId'
+        required: true
+        description: The Id of user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserV2'
+      responses:
+        '200':
+          description: The returned user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+    delete:
+      operationId: deleteUserV2
+      summary: deleteUserV2
+      description: Delete user by user id
+      tags:
+      - User V2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          $ref: '#/components/schemas/UserId'
+        required: true
+        description: The Id of user
+      responses:
+        '200':
+          description: The deleted user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /v2/users/invite:
+    post:
+      operationId: inviteUser
+      summary: inviteUser
+      description: Creates a new user in the caller's organization and sends an invite email to activate
+      tags:
+      - User V2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInvitationPayload'
+      responses:
+        '201':
+          description: Invited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+        '400':
+          description: Unable to invite the above email address.
+  /v2/users/invite:resendEmail:
+    post:
+      operationId: resendUserInvitation
+      summary: resendUserInvitation
+      description: Resend user invitation email
+      tags:
+      - User V2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email address of the address
+                  example: test@example.com
+                language:
+                  type: string
+                  description: Language for user invitation email
+                  enum:
+                  - en
+                  - de
+                  default: en
+      responses:
+        '200':
+          description: User Invitation sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+        '400':
+          description: User not found.
+  /v2/users/public/verifyEmail:
+    post:
+      operationId: verifyEmailWithToken
+      summary: verifyEmailWithToken
+      description: Update new email using an verification token
+      security: []
+      tags:
+      - User V2
+      parameters:
+      - in: query
+        name: token
+        schema:
+          $ref: '#/components/schemas/VerificationToken'
+        required: true
+        description: Verification Token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserVerificationPayload'
+      responses:
+        '200':
+          description: Verified successfully
+        '404':
+          description: Token not found for the user
+  /v2/users/public/activate:
+    post:
+      operationId: activateUser
+      summary: activateUser
+      description: Activate user using an invite token
+      security: []
+      tags:
+      - User V2
+      parameters:
+      - in: query
+        name: token
+        schema:
+          $ref: '#/components/schemas/InviteToken'
+        required: true
+        description: Invite Token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserActivationPayload'
+      responses:
+        '200':
+          description: Activated successfully
+        '404':
+          description: Token not found for the user
+  /v2/users/public/username/{username}:getLoginParameters:
+    get:
+      operationId: getUserLoginParametersV2
+      summary: getUserLoginParametersV2
+      description: Get user organization login parameters by username
+      security: []
+      parameters:
+      - name: username
+        in: path
+        description: Username
+        required: true
+        schema:
+          $ref: '#/components/schemas/Username'
+      tags:
+      - User V2
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  login_parameters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LoginParameters'
+  /v1/users/me:
+    get:
+      operationId: getMe
+      summary: getMe
+      description: Get currently logged in user
+      tags:
+      - User V1
+      responses:
+        '200':
+          description: Currently logged in user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /v1/users:
+    get:
+      operationId: listUsers
+      summary: listUsers
+      description: Lists users in organizations you have access to
+      parameters:
+      - name: org_ids
+        in: query
+        description: Comma-separated list of organization ids to filter by
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationId'
+      - name: query
+        in: query
+        description: Query text to filter by
+        required: false
+        schema:
+          $ref: '#/components/schemas/Query'
+      - name: limit
+        in: query
+        description: Limit the results size
+        required: false
+        schema:
+          $ref: '#/components/schemas/Limit'
+      - name: offset
+        in: query
+        description: Specify the page
+        required: false
+        schema:
+          $ref: '#/components/schemas/Offset'
+      tags:
+      - User V1
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+  /v1/users/{id}:
+    get:
+      operationId: getUser
+      summary: getUser
+      description: Get user by id
+      parameters:
+      - name: id
+        in: path
+        description: User id
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserId'
+      tags:
+      - User V1
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /v1/users/username/{username}:getLoginParameters:
+    get:
+      operationId: getUserLoginParameters
+      summary: getUserLoginParameters
+      description: Get user organization login parameters by username
+      security: []
+      parameters:
+      - name: username
+        in: path
+        description: Username
+        required: true
+        schema:
+          $ref: '#/components/schemas/Username'
+      tags:
+      - User V1
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  login_parameters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LoginParameters'
+components:
+  securitySchemes:
+    EpilotAuth:
+      type: http
+      scheme: bearer
+      description: Authorization header with epilot OAuth2 bearer token
+      bearerFormat: JWT
+  schemas:
+    PartnerInvitationToken:
+      type: string
+    InviteToken:
+      type: string
+    VerificationToken:
+      type: string
+    UserId:
+      type: string
+    Query:
+      type: string
+    OrganizationId:
+      type: string
+    Limit:
+      type: number
+    Offset:
+      type: number
+    Username:
+      type: string
+    UserInvitationPayload:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address of the address
+          example: test@example.com
+        language:
+          type: string
+          description: Language for user invitation email
+          enum:
+          - en
+          - de
+          default: en
+        roles:
+          type: array
+          items:
+            type: string
+            description: Role IDs for the user
+            example: 123:owner
+    UserActivationPayload:
+      type: object
+      properties:
+        display_name:
+          type: string
+          description: 'User''s display name (default: email address)'
+          example: Example User
+        password:
+          type: string
+          description: User's password
+          example: AKjhdakjsdh@!34
+    UserVerificationPayload:
+      type: object
+      properties:
+        password:
+          type: string
+          description: User's password
+          example: AKjhdakjsdh@!34
+    UserV2:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        organization_id:
+          $ref: '#/components/schemas/OrganizationId'
+        created_at:
+          type: string
+          example: '2022-02-08T04:44:32.246Z'
+        display_name:
+          type: string
+          description: 'User''s display name (default: email address)'
+          example: Example User
+        status:
+          type: string
+          enum:
+          - Active
+          - Pending
+          - Deactivated
+          - Deleted
+        email:
+          type: string
+          format: email
+        draft_email:
+          type: string
+          nullable: true
+          format: email
+        department:
+          type: string
+          description: User's department
+          nullable: true
+          example: Sales
+        phone:
+          type: string
+          nullable: true
+          example: 1234567890
+        preferred_language:
+          type: string
+          example: de
+        token:
+          type: string
+          example: 65dc527f-cb2d-4158-8f2e-8978dbceb599
+        mfa_enabled:
+          type: boolean
+          example: false
+        phone_verified:
+          type: boolean
+          example: true
+        signature:
+          type: string
+          example: <p>Thanks</p>
+          nullable: true
+        is_signature_enabled:
+          type: boolean
+          example: true
+          nullable: true
+        image_uri:
+          type: object
+          additionalProperties: true
+          properties:
+            original:
+              type: string
+              format: uri
+            thumbnail_32:
+              type: string
+              format: uri
+          example:
+            original: https://account-profile-images.epilot.cloud/1/avatar.png
+            thumbnail_32: https://account-profile-images.epilot.cloud/1/avatar_32x32.png
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: profileImageName
+              value:
+                type: string
+                example: avatar.png
+            required:
+            - name
+            - value
+    User:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        organization_id:
+          $ref: '#/components/schemas/OrganizationId'
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+          example: Example user
+          deprecated: true
+        name:
+          type: string
+          example: Example user
+          deprecated: true
+        preferred_language:
+          type: string
+          example: de
+        signature:
+          type: string
+          example: <p>Thanks</p>
+        roles:
+          type: array
+          items:
+            type: string
+            example: Owner
+          deprecated: true
+          description: Deprecated! Please use Permissions API instead
+        image_uri:
+          type: object
+          additionalProperties: true
+          properties:
+            original:
+              type: string
+              format: uri
+              example: https://account-profile-images.epilot.cloud/1/avatar.png
+            thumbnail_32:
+              type: string
+              format: uri
+              example: https://account-profile-images.epilot.cloud/1/avatar_32x32.png
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: profileImageName
+              value:
+                type: string
+                example: avatar.png
+            required:
+            - name
+            - value
+      required:
+      - id
+      - organization_id
+      - email
+      - name
+      - preferred_language
+      - roles
+      - properties
+    LoginParameters:
+      type: object
+      properties:
+        organization_id:
+          type: string
+          example: '123'
+        organization_name:
+          type: string
+          example: epilot GmbH
+        organization_type:
+          type: string
+          example: Vendor
+        cognito_region:
+          type: string
+          example: eu-central-1
+        cognito_identity_pool_id:
+          type: string
+          example: eu-central-1:d24af723-7b40-4c3d-be57-d0a732a59a5d
+        cognito_user_pool_id:
+          type: string
+          example: eu-central-sample
+        cognito_user_pool_client_id:
+          type: string
+          example: asbkh213ehkquwhdi
+        cognito_oauth_domain:
+          type: string
+          example: epilot-org-123
+        cognito_oauth_scopes:
+          type: array
+          items:
+            type: string
+          example:
+          - openid
+        oauth_response_type:
+          type: string
+          enum:
+          - code
+          - token
+    SignupUserPayload:
+      type: object
+      properties:
+        organization_detail:
+          $ref: '#/components/schemas/OrganizationDetail'
+        user_detail:
+          $ref: '#/components/schemas/UserDetail'
+        language:
+          type: string
+          description: Language for user invitation email
+          enum:
+          - en
+          - de
+          default: en
+    OrganizationDetail:
+      additionalProperties: true
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - Vendor
+          - Partner
+        name:
+          type: string
+          example: Epilot
+        pricing_tier:
+          type: string
+          example: professional
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        is_privacy_policy_checked:
+          type: boolean
+          example: false
+          nullable: true
+        is_terms_and_conditions_checked:
+          type: boolean
+          example: false
+          nullable: true
+      required:
+      - type
+      - name
+      - pricing_tier
+      - email
+    UserDetail:
+      type: object
+      properties:
+        full_name:
+          type: string
+          example: Example user
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          description: User's password
+          example: AKjhdakjsdh@!34
+      required:
+      - full_name
+      - email
+      - password
+    Organization:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationId'
+        type:
+          type: string
+          enum:
+          - Vendor
+          - Partner
+          nullable: true
+        name:
+          type: string
+          example: Epilot
+          nullable: true
+        signature:
+          type: string
+          example: <p>Thanks</p>
+          nullable: true
+        symbol:
+          type: string
+          example: EPI
+          nullable: true
+        pricing_tier:
+          type: string
+          example: professional
+          nullable: true
+        email:
+          type: string
+          example: someone@epilot.cloud
+          nullable: true
+        phone:
+          type: string
+          example: 49123123123
+          nullable: true
+        website:
+          type: string
+          example: https://epilot.cloud
+          nullable: true
+        address:
+          type: object
+          properties:
+            country:
+              type: string
+              nullable: true
+            city:
+              type: string
+              nullable: true
+            postal_code:
+              type: string
+              nullable: true
+            street:
+              type: string
+              nullable: true
+            street_number:
+              type: string
+              nullable: true
+        logo_url:
+          type: string
+          example: https://epilot-playground-organization-data.s3.eu-central-1.amazonaws.com/epilot-logo.png
+          nullable: true
+        logo_thumbnail_url:
+          type: string
+          example: https://epilot-playground-organization-data.s3.eu-central-1.amazonaws.com/epilot-logo.png
+          nullable: true
+        is_unlicensed_org:
+          type: boolean
+          example: false
+          nullable: true
+    DataPointsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/DataPoint'
+    DataPoint:
+      type: object
+      properties:
+        id:
+          description: Organization id
+          type: number
+          example: 206801
+        actual_users:
+          description: Number of current user
+          type: number
+          example: 10
+        max_users_last_month:
+          description: Max user last month
+          type: number
+          example: 10
+        non_billable_users_last_month:
+          description: Max non-billable user last month
+          type: number
+          example: 10
+servers:
+- url: https://user.sls.epilot.io
+
