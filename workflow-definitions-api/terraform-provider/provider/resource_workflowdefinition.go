@@ -2,9 +2,9 @@ package provider
 
 import (
 	"context"
-	sdk "epilot-workflows-definition/internal/sdk"
-	operations "epilot-workflows-definition/internal/sdk/pkg/models/operations"
-	shared "epilot-workflows-definition/internal/sdk/pkg/models/shared"
+	sdk "epilot-workflows-definition/sdk"
+	operations "epilot-workflows-definition/sdk/pkg/models/operations"
+	shared "epilot-workflows-definition/sdk/pkg/models/shared"
 	"fmt"
 	diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
