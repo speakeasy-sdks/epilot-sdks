@@ -53,7 +53,6 @@ func resourceWorkflowDefinitionCreate(ctx context.Context, d *schema.ResourceDat
 		closingReasonsItem := shared.ClosingReasonID{ID: id}
 
 		closingReasons = append(closingReasons, closingReasonsItem)
-
 	}
 
 	creationTime := d.Get("creation_time").(string)

@@ -27,7 +27,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	if !ok {
 		return nil, diag.FromErr(errors.New("failed to get Authorization"))
 	}
-	opts := []sdk.SDKOption{sdk.WithSecurity(shared.Security{BearerAuth: &shared.SchemeBearerAuth{Authorization: Authorization}})}
+	opts := []sdk.SDKOption{sdk.WithSecurity(shared.Security{BearerAuth: shared.SchemeBearerAuth{Authorization: Authorization}})}
 	c := sdk.New(opts...)
 	return c, nil
 }
